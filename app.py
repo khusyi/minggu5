@@ -1,13 +1,13 @@
 from flask import Flask, render_template, jsonify, request
 from pymongo import MongoClient
 from datetime import datetime
+from dotenv import load_dotenv
 
-connection_string = 'mongodb+srv://khusyi:sparta@cluster0.wmfbge6.mongodb.net/?retryWrites=true&w=majority'
+connection_string = 'mongodb+srv://dimas:sparta@cluster0.8jhjto5.mongodb.net/?retryWrites=true&w=majority'
 client = MongoClient(connection_string)
-db = client.dbsaya
+db = client.dbsmknumaku
 
 app = Flask(__name__)
-
 
 @app.route('/')
 def home():
@@ -17,38 +17,42 @@ def home():
 @app.route('/diary', methods=['GET'])
 def show_diary():
     articles = list(db.diary.find({}, {'_id': False}))
-
     return jsonify({'articles': articles})
 
 
 @app.route('/diary', methods=['POST'])
 def save_diary():
-    # sample_receive = request.form['sample_give']
-    # print(sample_receive)
-    title_receive = request.form.get('title_give')
-    content_receive = request.form.get('content_give')
+    # sample[_receive = request.form['sample_give']
+    # printsample_receive]
+    title_receive = request.form.get("title_give")
+    content_receive = request.form.get("content_give")
 
     today = datetime.now()
     mytime = today.strftime('%Y-%m-%d-%H-%M-%S')
 
-    file = request.files["file_give"]
+    file = request.files['file_give']
     extension = file.filename.split('.')[-1]
-    filename = f'static/post-{mytime}.{extension}'
-    file.save(filename )
-    
+    filename = f'file-{mytime}.{extension}'
+    save_to = f'static/{filename}'
+    file.save(save_to)
+
     profile = request.files['profile_give']
     extension = profile.filename.split('.')[-1]
-    profilename = f'static/profile-{mytime}.{extension}'
-    profile.save(profilename)
-    
+    profilename = f'profile-{mytime}.{extension}'
+    save = f'static/{profilename}'
+    profile.save(save)
+
+    time = today.strftime('%Y.%m.%d')
+
     doc = {
-        'file': filename,
-        'profile': profilename,
+        'file' : filename,    
+        'profile' : profilename,
         'title': title_receive,
-        'content': content_receive
+        'content': content_receive,
+        'time': time,
     }
     db.diary.insert_one(doc)
-    return jsonify({'messsage': 'data was saved!'})
+    return jsonify({'msg': 'POST request complete!'})
 
 
 if __name__ == '__main__':
